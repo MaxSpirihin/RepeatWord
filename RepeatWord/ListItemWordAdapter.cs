@@ -9,6 +9,7 @@ using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
+using Android.Speech.Tts;
 using Android.Views;
 using Android.Widget;
 
@@ -26,11 +27,14 @@ namespace RepeatWord
     {
         List<ListItemWord> items;
         Activity context;
-        public ListItemWordAdapter(Activity context, List<ListItemWord> items)
+        TextToSpeech textToSpeech;
+
+        public ListItemWordAdapter(Activity context, List<ListItemWord> items, TextToSpeech _TextToSpeech)
             : base()
         {
             this.context = context;
             this.items = items;
+            this.textToSpeech = _TextToSpeech;
         }
         public override long GetItemId(int position)
         {
@@ -53,6 +57,11 @@ namespace RepeatWord
             view.FindViewById<TextView>(Resource.Id.EnglishWord).Text = item.English;
             view.FindViewById<TextView>(Resource.Id.RussianWord).Text = item.ShowRussian ? item.Russian : String.Empty;
             view.SetBackgroundColor(item.IsForgotten ? Android.Graphics.Color.LightPink : Android.Graphics.Color.White);
+
+            view.FindViewById<Button>(Resource.Id.SpeakButton).Click += (sender, e) =>
+            {
+                textToSpeech.Speak(item.English, QueueMode.Flush, null);
+            };
             return view;
         }
     }

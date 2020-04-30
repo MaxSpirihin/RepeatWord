@@ -40,7 +40,8 @@ namespace RepeatWord
                     string fileName = fileData.FileName;
 
                     Console.WriteLine("File name chosen: " + fileName);
-                    List<Word> words = ExcelParser.Parse(fileData.DataArray.ToArray());
+                    string er;
+                    List<Word> words = ExcelParser.Parse(fileData.DataArray.ToArray(), out er);
                     
                     if (words.Count > 0)
                     {
@@ -51,12 +52,13 @@ namespace RepeatWord
                     }
                     else
                     {
-                        Toast.MakeText(Application.Context, "Something gone wrong", ToastLength.Long).Show();
+                        Toast.MakeText(Application.Context, "Parse ex " + er, ToastLength.Long).Show();
                     }
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine("Exception choosing file: " + ex.ToString());
+                    Toast.MakeText(Application.Context, "Load ex " + ex.Message, ToastLength.Long).Show();
                 }
             };
 

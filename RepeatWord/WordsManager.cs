@@ -109,8 +109,9 @@ namespace RepeatWord
                 return null;
 
             RepeatSession session = new RepeatSession(false);
-            
-            foreach (var word in lastFullSession.Words.Where(_W => _W.IsForgotten))
+
+            Random random = new Random();
+            foreach (var word in lastFullSession.Words.Where(_W => _W.IsForgotten).OrderBy(_W => random.Next()))
                 session.AddWord(word.English);
 
             m_Data.CurrentLearnSession = session;

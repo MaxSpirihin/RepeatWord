@@ -14,7 +14,7 @@ namespace RepeatWord
 {
     public static class ExcelParser
     {
-        public static List<Word> Parse(byte[] _FileData)
+        public static List<Word> Parse(byte[] _FileData, out string _Error)
         {
             try
             {
@@ -51,11 +51,13 @@ namespace RepeatWord
                     }
                 }
 
+                _Error = "";
                 return words;
             }
             catch (Exception e)
             {
                 Console.WriteLine("ERROR while parse excel " + e.Message);
+                _Error = e.Message;
                 return new List<Word>();
             }
         }

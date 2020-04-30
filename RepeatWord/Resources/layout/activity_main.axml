@@ -19,6 +19,11 @@
 		android:layout_height="wrap_content"
 		android:id="@+id/btnGoLearnForgottenWords"/>
 	<Button
+		android:text="statistics"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:id="@+id/btnStatistics"/>
+	<Button
 		android:text="Settings"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
