@@ -25,7 +25,7 @@ namespace RepeatWord
             base.OnCreate(savedInstanceState);
             SetContentView(Resource.Layout.activity_main);
             AskPermissions();
-            WordsManager.Instance.Init();
+            WordsManager.Instance.Init(Path.Combine(Android.OS.Environment.ExternalStorageDirectory.AbsolutePath, "RepeatWord"));
 
             Button button = FindViewById<Button>(Resource.Id.btnLearnActiveWords);
             button.Click += (sender, e) =>

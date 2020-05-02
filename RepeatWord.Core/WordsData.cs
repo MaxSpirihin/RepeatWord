@@ -45,6 +45,18 @@ namespace RepeatWord
             return result;
         }
 
+        public List<Word> GetLearntWords()
+        {
+            List<Word> result = new List<Word>();
+            int index = GetFirstNewWordIndex();
+            for (int i = 0; i < index - DailyRepeatCount; i++)
+            {
+                result.Add(Words[i]);
+            }
+
+            return result;
+        }
+
         public List<Word> GetDailyRepeatWords()
         {
             List<Word> result = new List<Word>();

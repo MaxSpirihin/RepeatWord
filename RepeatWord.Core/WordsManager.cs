@@ -1,16 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-
-using Android.App;
-using Android.Content;
-using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
-using Newtonsoft.Json;
 
 namespace RepeatWord
 {
@@ -36,6 +29,7 @@ namespace RepeatWord
         #endregion
 
         #region attributes
+        
         Dictionary<string, Word> m_WordsCache;
 
         #endregion
@@ -43,14 +37,8 @@ namespace RepeatWord
         #region properties
 
         public WordsData Data { get; private set; }
-
-        string CacheFolderName
-        {
-            get
-            {
-                return Path.Combine(Android.OS.Environment.ExternalStorageDirectory.AbsolutePath, "RepeatWord");
-            }
-        }
+        
+        string CacheFolderName { get; set; }
 
         string CacheFileName
         {
@@ -62,8 +50,9 @@ namespace RepeatWord
 
         #endregion
 
-        public void Init()
+        public void Init(string _CacheFolder)
         {
+            CacheFolderName = _CacheFolder;
             string json = GetJsonFromCache();
 
             Data = string.IsNullOrEmpty(json) ? new WordsData() : JsonConvert.DeserializeObject<WordsData>(json);
@@ -99,7 +88,7 @@ namespace RepeatWord
             switch (_Type)
             {
                 case RepeatSessionType.FULL_REPEAT:
-                    foreach (Word word in Data.Words.OrderBy(_W => random.Next()))
+                    foreach (Word word in Data.GetLearntWords().OrderBy(_W => random.Next()))
                         session.AddWord(word);
                     break;
                 case RepeatSessionType.REPEAT_FORGOTTEN:

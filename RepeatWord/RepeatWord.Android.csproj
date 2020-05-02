@@ -66,17 +66,12 @@
   <ItemGroup>
     <Compile Include="LearnActiveWordsActivity.cs" />
     <Compile Include="StatisticsActivity.cs" />
-    <Compile Include="ExcelParser.cs" />
     <Compile Include="ListItemWordAdapter.cs" />
     <Compile Include="MainActivity.cs" />
-    <Compile Include="RepeatSession.cs" />
     <Compile Include="RepeatWordActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingActivity.cs" />
-    <Compile Include="Word.cs" />
-    <Compile Include="WordsData.cs" />
-    <Compile Include="WordsManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
@@ -149,6 +144,12 @@
       <Generator>MSBuild:UpdateGeneratedFiles</Generator>
       <SubType>Designer</SubType>
     </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RepeatWord.Core\RepeatWord.Core.csproj">
+      <Project>{7da8340a-0238-4dff-b1af-79a33fa58fe6}</Project>
+      <Name>RepeatWord.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
