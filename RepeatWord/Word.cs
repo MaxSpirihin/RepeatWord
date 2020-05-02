@@ -19,6 +19,7 @@ namespace RepeatWord
         public string Russian;
 
         public string ListName;
+        public int ListNum;
         public int Column;
         public int Row;
     }

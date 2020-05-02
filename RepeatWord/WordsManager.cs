@@ -36,13 +36,13 @@ namespace RepeatWord
         #endregion
 
         #region attributes
-
-        WordsData m_Data;
         Dictionary<string, Word> m_WordsCache;
 
         #endregion
 
         #region properties
+
+        public WordsData Data { get; private set; }
 
         string CacheFolderName
         {
@@ -66,89 +66,85 @@ namespace RepeatWord
         {
             string json = GetJsonFromCache();
 
-            m_Data = string.IsNullOrEmpty(json) ? new WordsData() : JsonConvert.DeserializeObject<WordsData>(json);
+            Data = string.IsNullOrEmpty(json) ? new WordsData() : JsonConvert.DeserializeObject<WordsData>(json);
+            
             UpdateWordsCache();
         }
 
         public void SetWords(List<Word> _Words)
         {
-            m_Data.Words = _Words;
+            Data.Words = _Words;
             SaveDataToCache();
             UpdateWordsCache();
         }
-
-        public List<Word> GetAllWords()
+        
+        public RepeatSession GetActiveLearnSession()
         {
-            return m_Data.Words;
-        }
-
-        public RepeatSession GetOrGenerateFullSession()
-        {
-            if (m_Data.CurrentFullSession != null)
-                return m_Data.CurrentFullSession;
-
-            RepeatSession session = new RepeatSession(true);
-
-            Random random = new Random();
-            foreach (Word word in m_Data.Words.OrderBy(_W => random.Next()))
-                session.AddWord(word);
-
-            m_Data.CurrentFullSession = session;
-            SaveDataToCache();
-            return session;
-        }
-
-        public RepeatSession GetOrGenerateLearnSession()
-        {
-            if (m_Data.CurrentLearnSession != null)
-                return m_Data.CurrentLearnSession;
-
-            RepeatSession lastFullSession = m_Data.CompletedSessions.LastOrDefault(_S => _S.IsFull);
-
-            if (lastFullSession == null)
-                return null;
-
-            RepeatSession session = new RepeatSession(false);
-
-            Random random = new Random();
-            foreach (var word in lastFullSession.Words.Where(_W => _W.IsForgotten).OrderBy(_W => random.Next()))
+            RepeatSession session = new RepeatSession(RepeatSessionType.ACTIVE_LEARN);
+            
+            foreach (var word in Data.GetActiveLearnWords())
                 session.AddWord(word.English);
 
-            m_Data.CurrentLearnSession = session;
-            SaveDataToCache();
             return session;
         }
 
-        public void ResetFullSession()
+        public RepeatSession GetOrGenerateCurrentSession(RepeatSessionType _Type)
         {
-            m_Data.CurrentFullSession = null;
-            SaveDataToCache();
-        }
+            RepeatSession session;
+            if (Data.CurrentSessions.TryGetValue(_Type, out session) && session != null)
+                return Data.CurrentSessions[_Type];
 
-        public void ResetLearnSession()
-        {
-            m_Data.CurrentLearnSession = null;
-            SaveDataToCache();
-        }
+            session = new RepeatSession(_Type);
+            Random random = new Random();
+            switch (_Type)
+            {
+                case RepeatSessionType.FULL_REPEAT:
+                    foreach (Word word in Data.Words.OrderBy(_W => random.Next()))
+                        session.AddWord(word);
+                    break;
+                case RepeatSessionType.REPEAT_FORGOTTEN:
+                    RepeatSession lastFullSession = Data.CompletedSessions.
+                        LastOrDefault(_S => _S.RepeatSessionType == RepeatSessionType.FULL_REPEAT);
 
+                    if (lastFullSession == null)
+                        return null;
+                    
+                    foreach (var word in lastFullSession.Words.Where(_W => _W.IsForgotten).OrderBy(_W => random.Next()))
+                        session.AddWord(word.English);
+
+                    break;
+                case RepeatSessionType.DAILY_REPEAT:
+                    foreach (var word in Data.GetDailyRepeatWords())
+                        session.AddWord(word.English);
+                    break;
+                case RepeatSessionType.DAILY_REPEAT_RANDOM:
+                    foreach (var word in Data.GetDailyRepeatWords().OrderBy(_W => random.Next()))
+                        session.AddWord(word.English);
+                    break;
+                case RepeatSessionType.ACTIVE_LEARN:
+                    return null;
+            }
+            
+            Data.CurrentSessions[_Type] = session;
+            SaveDataToCache();
+            return session;
+        }
+        
         public void SaveDataToCache()
         {
-            if (m_Data.CurrentFullSession != null && m_Data.CurrentFullSession.RepeatedWords >= m_Data.CurrentFullSession.Words.Count)
+            foreach (var session in Data.CurrentSessions.ToList())
             {
-                m_Data.CompletedSessions.Add(m_Data.CurrentFullSession);
-                m_Data.CurrentFullSession = null;
-            }
-
-            if (m_Data.CurrentLearnSession != null && m_Data.CurrentLearnSession.RepeatedWords >= m_Data.CurrentLearnSession.Words.Count)
-            {
-                m_Data.CompletedSessions.Add(m_Data.CurrentLearnSession);
-                m_Data.CurrentLearnSession = null;
+                if (session.Value != null && session.Value.RepeatedWords >= session.Value.Words.Count)
+                {
+                    Data.CompletedSessions.Add(session.Value);
+                    Data.CurrentSessions[session.Key] = null;
+                }
             }
 
             if (!Directory.Exists(CacheFolderName))
                 Directory.CreateDirectory(CacheFolderName);
 
-            File.WriteAllText(CacheFileName, JsonConvert.SerializeObject(m_Data));
+            File.WriteAllText(CacheFileName, JsonConvert.SerializeObject(Data));
         }
 
         public Word GetWord(string _English)
@@ -161,7 +157,7 @@ namespace RepeatWord
         void UpdateWordsCache()
         {
             m_WordsCache = new Dictionary<string, Word>();
-            foreach (Word word in m_Data.Words)
+            foreach (Word word in Data.Words)
                 m_WordsCache[word.English] = word;
         }
 
@@ -172,8 +168,6 @@ namespace RepeatWord
 
             return File.Exists(CacheFileName) ? File.ReadAllText(CacheFileName) : string.Empty;
         }
-
-        
 
         #endregion
     }

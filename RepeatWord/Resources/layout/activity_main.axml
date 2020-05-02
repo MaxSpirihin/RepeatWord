@@ -9,12 +9,27 @@
 	android:minHeight="25px"
 	android:orientation="vertical">
 	<Button
-		android:text="Repeart words"
+		android:text="New words"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:id="@+id/btnLearnActiveWords"/>
+	<Button
+		android:text="Daily repeat"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:id="@+id/btnDailyRepeat"/>
+	<Button
+		android:text="Daily repeat random"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:id="@+id/btnDailyRepeatRandom"/>
+	<Button
+		android:text="Repeat all words"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:id="@+id/btnGoRepeatWords"/>
 	<Button
-		android:text="Learn forgotten words"
+		android:text="Repeat forgotten words"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:id="@+id/btnGoLearnForgottenWords"/>

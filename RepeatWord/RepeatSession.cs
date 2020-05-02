@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using Android.App;
-using Android.Content;
-using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
+﻿using System.Collections.Generic;
 
 namespace RepeatWord
 {
+    public enum RepeatSessionType
+    {
+        FULL_REPEAT = 0,
+        REPEAT_FORGOTTEN = 1,
+        DAILY_REPEAT = 2,
+        ACTIVE_LEARN = 3,
+        DAILY_REPEAT_RANDOM = 4,
+    }
+
     public class RepeatSessionWord
     {
         public string English;
@@ -20,15 +19,16 @@ namespace RepeatWord
 
     public class RepeatSession
     {
-        public RepeatSession(bool _IsFull)
+        public RepeatSession(RepeatSessionType _RepeatSessionType)
         {
             Words = new List<RepeatSessionWord>();
-            IsFull = _IsFull;
+            RepeatSessionType = _RepeatSessionType;
         }
 
         public List<RepeatSessionWord> Words;
         public int RepeatedWords;
-        public bool IsFull;
+        public RepeatSessionType RepeatSessionType;
+        public int LearnSeconds;
 
         public void AddWord(Word _Word)
         {

@@ -43,6 +43,7 @@ namespace RepeatWord
                                         English = en,
                                         Russian = ru,
                                         ListName = table.Name,
+                                        ListNum = tableNum,
                                         Row = i
                                     });
                                 }

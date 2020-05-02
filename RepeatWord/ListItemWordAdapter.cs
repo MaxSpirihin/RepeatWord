@@ -23,31 +23,35 @@ namespace RepeatWord
         public bool ShowRussian;
     }
 
-    public class ListItemWordAdapter : BaseAdapter<ListItemWord>
+    public class ListItemWordAdapter : BaseAdapter<ListItemWord>, TextToSpeech.IOnInitListener
     {
         List<ListItemWord> items;
         Activity context;
         TextToSpeech textToSpeech;
 
-        public ListItemWordAdapter(Activity context, List<ListItemWord> items, TextToSpeech _TextToSpeech)
+        public ListItemWordAdapter(Activity context, List<ListItemWord> items)
             : base()
         {
             this.context = context;
             this.items = items;
-            this.textToSpeech = _TextToSpeech;
+            textToSpeech = new TextToSpeech(context, this, "com.google.android.tts");
         }
+
         public override long GetItemId(int position)
         {
             return position;
         }
+
         public override ListItemWord this[int position]
         {
             get { return items[position]; }
         }
+
         public override int Count
         {
             get { return items.Count; }
         }
+
         public override View GetView(int position, View convertView, ViewGroup parent)
         {
             var item = items[position];
@@ -63,6 +67,12 @@ namespace RepeatWord
                 textToSpeech.Speak(item.English, QueueMode.Flush, null);
             };
             return view;
+        }
+
+        // Interface method required for IOnInitListener
+        void TextToSpeech.IOnInitListener.OnInit(OperationResult status)
+        {
+            textToSpeech.SetLanguage(Java.Util.Locale.English);
         }
     }
 }

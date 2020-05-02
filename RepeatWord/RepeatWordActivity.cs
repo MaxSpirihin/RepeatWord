@@ -11,7 +11,7 @@ using Android.Widget;
 namespace RepeatWord
 {
     [Activity(Label = "RepeatWordActivity")]
-    public class RepeatWordActivity : Activity, TextToSpeech.IOnInitListener
+    public class RepeatWordActivity : Activity
     {
         const int LIST_WORDS_COUNT = 20;
 
@@ -24,21 +24,17 @@ namespace RepeatWord
         DateTime m_StartCurrentPageTime;
         DateTime? m_PauseTime;
         int m_SecondsInPause;
-
-        TextToSpeech textToSpeech;
-
+        
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
             SetContentView(Resource.Layout.activity_repeat_word);
 
-            textToSpeech = new TextToSpeech(this, this, "com.google.android.tts");
-
-            bool isLearn = Intent.Extras.GetBoolean("IsLearn", false);
-
+            RepeatSessionType type = (RepeatSessionType)Intent.Extras.GetInt("Type", 0);
             m_ListView = FindViewById<ListView>(Resource.Id.lwMain);
+            
+            m_Session = WordsManager.Instance.GetOrGenerateCurrentSession(type);
 
-            m_Session = isLearn ? WordsManager.Instance.GetOrGenerateLearnSession() : WordsManager.Instance.GetOrGenerateFullSession();
             if (m_Session == null)
             {
                 Toast.MakeText(Application.Context, "Cant generate session", ToastLength.Long).Show();
@@ -46,8 +42,15 @@ namespace RepeatWord
                 return;
             }
 
+            if (m_Session.Words.Count == 0)
+            {
+                Toast.MakeText(Application.Context, "No words for that sesion", ToastLength.Long).Show();
+                Finish();
+                return;
+            }
+
             m_ListView.TextFilterEnabled = true;
-            m_ListView.Adapter = m_ListViewAdapter = new ListItemWordAdapter(this, m_ListItemWords, textToSpeech);
+            m_ListView.Adapter = m_ListViewAdapter = new ListItemWordAdapter(this, m_ListItemWords);
             m_ListView.ItemClick += OnListItemClick;
             
             m_NextButton = FindViewById<Button>(Resource.Id.btnGoNext);
@@ -136,10 +139,6 @@ namespace RepeatWord
             m_ListViewAdapter.NotifyDataSetChanged();
         }
 
-        // Interface method required for IOnInitListener
-        void TextToSpeech.IOnInitListener.OnInit(OperationResult status)
-        {
-            textToSpeech.SetLanguage(Java.Util.Locale.English);
-        }
+       
     }
 }

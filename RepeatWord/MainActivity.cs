@@ -27,11 +27,34 @@ namespace RepeatWord
             AskPermissions();
             WordsManager.Instance.Init();
 
-            Button button = FindViewById<Button>(Resource.Id.btnGoRepeatWords);
+            Button button = FindViewById<Button>(Resource.Id.btnLearnActiveWords);
             button.Click += (sender, e) =>
             {
-                 var intent = new Intent(this, typeof(RepeatWordActivity));
-                intent.PutExtra("IsLearn", false);
+                var intent = new Intent(this, typeof(LearnActiveWordsActivity));
+                StartActivity(intent);
+            };
+
+            button = FindViewById<Button>(Resource.Id.btnDailyRepeat);
+            button.Click += (sender, e) =>
+            {
+                var intent = new Intent(this, typeof(RepeatWordActivity));
+                intent.PutExtra("Type", (int)RepeatSessionType.DAILY_REPEAT);
+                StartActivity(intent);
+            };
+
+            button = FindViewById<Button>(Resource.Id.btnDailyRepeatRandom);
+            button.Click += (sender, e) =>
+            {
+                var intent = new Intent(this, typeof(RepeatWordActivity));
+                intent.PutExtra("Type", (int)RepeatSessionType.DAILY_REPEAT_RANDOM);
+                StartActivity(intent);
+            };
+
+            button = FindViewById<Button>(Resource.Id.btnGoRepeatWords);
+            button.Click += (sender, e) =>
+            {
+                var intent = new Intent(this, typeof(RepeatWordActivity));
+                intent.PutExtra("Type", (int)RepeatSessionType.FULL_REPEAT);
                 StartActivity(intent);
             };
 
@@ -39,7 +62,14 @@ namespace RepeatWord
             button.Click += (sender, e) =>
             {
                 var intent = new Intent(this, typeof(RepeatWordActivity));
-                intent.PutExtra("IsLearn", true);
+                intent.PutExtra("Type", (int)RepeatSessionType.REPEAT_FORGOTTEN);
+                StartActivity(intent);
+            };
+
+            button = FindViewById<Button>(Resource.Id.btnStatistics);
+            button.Click += (sender, e) =>
+            {
+                var intent = new Intent(this, typeof(StatisticsActivity));
                 StartActivity(intent);
             };
 

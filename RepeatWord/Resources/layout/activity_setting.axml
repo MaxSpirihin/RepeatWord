@@ -8,22 +8,87 @@
 	android:minWidth="25px"
 	android:minHeight="25px"
 	android:orientation="vertical">
+	<TextView
+		android:text="Words for learn count"
+		android:textAppearance="?android:attr/textAppearanceMedium"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:id="@+id/textView1" />
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal">
+		<TextView
+			android:text="Active:"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" />
+		<EditText
+			android:inputType="number"
+			android:layout_width="80dp"
+			android:layout_height="wrap_content"
+			android:id="@+id/etLearnWordsCount" />
+		<TextView
+			android:text="Repeat:"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" />
+		<EditText
+			android:inputType="number"
+			android:layout_width="80dp"
+			android:layout_height="wrap_content"
+			android:id="@+id/etDailyWordsCount" />
+	</LinearLayout>
+
+	<TextView
+		android:text="First new word list and row"
+		android:textAppearance="?android:attr/textAppearanceMedium"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content" />
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal">
+		<TextView
+			android:text="List:"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"/>
+		<EditText
+			android:inputType="number"
+			android:layout_width="80dp"
+			android:layout_height="wrap_content"
+			android:id="@+id/etListNum" />
+		<TextView
+			android:text="Row:"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" />
+		<EditText
+			android:inputType="number"
+			android:layout_width="80dp"
+			android:layout_height="wrap_content"
+			android:id="@+id/etRowNum" />
+		<Button
+			android:text=""
+			android:layout_width="80dp"
+			android:layout_height="wrap_content"
+			android:id="@+id/btnMoveToNextWords" />
+	</LinearLayout>
+
+	<TextView
+		android:text=""
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content" 
+		android:id="@+id/tvCurrentWords" />
+
 	<Button
 		android:text="Update words"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:id="@+id/btnPickFile" />
-	<TextView
-		android:text="Skip last words"
-		android:textAppearance="?android:attr/textAppearanceMedium"
+
+	<Button
+		android:text="Reset current daily sessions"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:id="@+id/textView1" />
-	<EditText
-		android:inputType="number"
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:id="@+id/etSkipLastWords" />
+		android:id="@+id/btnResetCurrentDailySession" />
 	<Button
 		android:text="Reset current full session"
 		android:layout_width="match_parent"
