@@ -21,7 +21,7 @@ namespace RepeatWord
             CurrentSessions = new Dictionary<RepeatSessionType, RepeatSession>();
         }
 
-        public int GetFirstNewWordIndex()
+        public int? GetFirstNewWordIndex()
         {
             List<Word> result = new List<Word>();
             for (int i = 0; i < Words.Count; i++)
@@ -30,14 +30,17 @@ namespace RepeatWord
                     return i;
             }
 
-            return -1;
+            return null;
         }
 
         public List<Word> GetActiveLearnWords()
         {
             List<Word> result = new List<Word>();
-            int index = GetFirstNewWordIndex();
-            for (int i= index; i < Math.Min(Words.Count, index + ActiveLearnCount); i++)
+            int? index = GetFirstNewWordIndex();
+            if (index == null)
+                return result;
+
+            for (int i = index.Value; i < Math.Min(Words.Count, index.Value + ActiveLearnCount); i++)
             {
                 result.Add(Words[i]);
             }
@@ -48,8 +51,11 @@ namespace RepeatWord
         public List<Word> GetLearntWords()
         {
             List<Word> result = new List<Word>();
-            int index = GetFirstNewWordIndex();
-            for (int i = 0; i < index - DailyRepeatCount; i++)
+            int? index = GetFirstNewWordIndex();
+            if (index == null)
+                return result;
+
+            for (int i = 0; i < index.Value - DailyRepeatCount; i++)
             {
                 result.Add(Words[i]);
             }
@@ -60,8 +66,11 @@ namespace RepeatWord
         public List<Word> GetDailyRepeatWords()
         {
             List<Word> result = new List<Word>();
-            int index = GetFirstNewWordIndex();
-            for (int i = Math.Max(0, index - DailyRepeatCount); i < index; i++)
+            int? index = GetFirstNewWordIndex();
+            if (index == null)
+                return result;
+
+            for (int i = Math.Max(0, index.Value - DailyRepeatCount); i < index.Value; i++)
             {
                 result.Add(Words[i]);
             }

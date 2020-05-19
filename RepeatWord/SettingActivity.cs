@@ -39,11 +39,11 @@ namespace RepeatWord
             m_NextButton.Click += (sender, e) =>
             {
                 List<Word> result = new List<Word>();
-                int nextNewWordIndex = WordsManager.Instance.Data.GetFirstNewWordIndex();
+                int? nextNewWordIndex = WordsManager.Instance.Data.GetFirstNewWordIndex();
 
-                if (nextNewWordIndex > 0 || nextNewWordIndex + WordsManager.Instance.Data.ActiveLearnCount < WordsManager.Instance.Data.Words.Count)
+                if (nextNewWordIndex != null && nextNewWordIndex.Value + WordsManager.Instance.Data.ActiveLearnCount < WordsManager.Instance.Data.Words.Count)
                 {
-                    Word nextWord = WordsManager.Instance.Data.Words[nextNewWordIndex + WordsManager.Instance.Data.ActiveLearnCount];
+                    Word nextWord = WordsManager.Instance.Data.Words[nextNewWordIndex.Value + WordsManager.Instance.Data.ActiveLearnCount];
                     m_NewWordList.Text = nextWord.ListNum.ToString();
                     m_NewWordRow.Text = nextWord.Row.ToString();
                 }
