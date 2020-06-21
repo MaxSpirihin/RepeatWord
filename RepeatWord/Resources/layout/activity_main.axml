@@ -7,7 +7,8 @@
 	android:layout_height="match_parent"
 	android:minWidth="25px"
 	android:minHeight="25px"
-	android:orientation="vertical">
+	android:orientation="vertical"
+	android:id="@+id/linLayoutMain">
 	<Button
 		android:text="New words"
 		android:layout_width="match_parent"
@@ -28,6 +29,11 @@
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:id="@+id/btnGoRepeatWords"/>
+		<Button
+		android:text="Repeat all words reversed"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:id="@+id/btnGoRepeatWordsReversed"/>
 	<Button
 		android:text="Repeat forgotten words"
 		android:layout_width="match_parent"

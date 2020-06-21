@@ -8,12 +8,10 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Android.Content;
-using Plugin.FilePicker;
-using Plugin.FilePicker.Abstractions;
 using System.IO;
-using Android.Support.V4.App;
 using Android;
 using Android.Content.PM;
+using static Android.App.ActionBar;
 
 namespace RepeatWord
 {
@@ -58,6 +56,14 @@ namespace RepeatWord
                 StartActivity(intent);
             };
 
+            button = FindViewById<Button>(Resource.Id.btnGoRepeatWordsReversed);
+            button.Click += (sender, e) =>
+            {
+                var intent = new Intent(this, typeof(RepeatWordActivity));
+                intent.PutExtra("Type", (int)RepeatSessionType.FULL_REPEAT_REVERSED);
+                StartActivity(intent);
+            };
+
             button = FindViewById<Button>(Resource.Id.btnGoLearnForgottenWords);
             button.Click += (sender, e) =>
             {
@@ -79,8 +85,11 @@ namespace RepeatWord
                 var intent = new Intent(this, typeof(SettingActivity));
                 StartActivity(intent);
             };
+
+
+
         }
-        
+
         void AskPermissions()
         {
             if (PackageManager.CheckPermission(Manifest.Permission.ReadExternalStorage, PackageName) != Permission.Granted

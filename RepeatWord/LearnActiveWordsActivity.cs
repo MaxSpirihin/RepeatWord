@@ -33,20 +33,20 @@ namespace RepeatWord
 
             m_ListView = FindViewById<ListView>(Resource.Id.lwMain);
             m_ListView.TextFilterEnabled = true;
-            m_ListView.Adapter = m_ListViewAdapter = new ListItemWordAdapter(this, m_ListItemWords);
+            m_ListView.Adapter = m_ListViewAdapter = new ListItemWordAdapter(this, m_ListItemWords, false);
             m_ListView.ItemClick += OnListItemClick;
             
             FindViewById<Button>(Resource.Id.btnNewWordsShowAll).Click += (sender, e) =>
             {
                 foreach (var word in m_ListItemWords)
-                    word.ShowRussian = true;
+                    word.ShowTranslate = true;
                 m_ListViewAdapter.NotifyDataSetChanged();
             };
 
             FindViewById<Button>(Resource.Id.btnNewWordsClear).Click += (sender, e) =>
             {
                 foreach (var word in m_ListItemWords)
-                    word.ShowRussian = false;
+                    word.ShowTranslate = false;
                 m_ListViewAdapter.NotifyDataSetChanged();
             };
 
@@ -60,7 +60,7 @@ namespace RepeatWord
         void OnListItemClick(object sender, AdapterView.ItemClickEventArgs e)
         {
             var t = m_ListItemWords[e.Position];
-            t.ShowRussian = !t.ShowRussian;
+            t.ShowTranslate = !t.ShowTranslate;
             m_ListViewAdapter.NotifyDataSetChanged();
         }
 

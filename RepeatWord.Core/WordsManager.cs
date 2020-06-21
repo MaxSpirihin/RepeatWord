@@ -88,6 +88,7 @@ namespace RepeatWord
             switch (_Type)
             {
                 case RepeatSessionType.FULL_REPEAT:
+                case RepeatSessionType.FULL_REPEAT_REVERSED:
                     foreach (Word word in Data.GetLearntWords().OrderBy(_W => random.Next()))
                         session.AddWord(word);
                     break;
@@ -123,7 +124,7 @@ namespace RepeatWord
         {
             foreach (var session in Data.CurrentSessions.ToList())
             {
-                if (session.Value != null && session.Value.RepeatedWords >= session.Value.Words.Count)
+                if (session.Value != null && session.Value.IsEnded)
                 {
                     Data.CompletedSessions.Add(session.Value);
                     Data.CurrentSessions[session.Key] = null;

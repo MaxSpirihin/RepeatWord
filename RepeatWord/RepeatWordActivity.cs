@@ -50,30 +50,14 @@ namespace RepeatWord
             }
 
             m_ListView.TextFilterEnabled = true;
-            m_ListView.Adapter = m_ListViewAdapter = new ListItemWordAdapter(this, m_ListItemWords);
+            m_ListView.Adapter = m_ListViewAdapter = new ListItemWordAdapter(this, m_ListItemWords, type.NeedReverse());
             m_ListView.ItemClick += OnListItemClick;
             
             m_NextButton = FindViewById<Button>(Resource.Id.btnGoNext);
             m_NextButton.Click += (sender, e) =>
             {
-                //because user can fast press 2 times
-                if (m_Session.RepeatedWords >= m_Session.Words.Count)
-                {
-                    Finish();
-                    return;
-                }
-
-                for (int i = 0; i< m_ListItemWords.Count; i++)
-                {
-                    m_Session.Words[m_Session.RepeatedWords + i].IsForgotten = m_ListItemWords[i].IsForgotten;
-                }
-                m_Session.LearnSeconds += (int)(DateTime.Now - m_StartCurrentPageTime).TotalSeconds - m_SecondsInPause;
-                m_Session.RepeatedWords += m_ListItemWords.Count;
-                WordsManager.Instance.SaveDataToCache();
-                PrepareWords();
+                NextButtonClicked();
             };
-
-            
             
             PrepareWords();
         }
@@ -95,50 +79,127 @@ namespace RepeatWord
             }
         }
 
-        void PrepareWords()
+        void NextButtonClicked()
         {
-            if (m_Session.RepeatedWords >= m_Session.Words.Count)
+            //because user can fast press 2 times
+            if (m_Session.IsEnded)
             {
                 Finish();
                 return;
             }
-            int forggotten = m_Session.Words.Take(m_Session.RepeatedWords).Count(_W => _W.IsForgotten);
-            int forgottenPercent = m_Session.RepeatedWords > 0 ? forggotten * 100 / m_Session.RepeatedWords : 0;
-            m_NextButton.Text = string.Format(
-                "Next ({0}/{1}) Forget - ({2},{3}%), Time - {4}:{5}",
-                m_Session.RepeatedWords,
-                m_Session.Words.Count,
-                forggotten,
-                forgottenPercent,
-                m_Session.LearnSeconds / 60,
-                m_Session.LearnSeconds % 60
-            );
+
+            if (m_Session.ImmediateRepeatIsInProgress)
+            {
+                foreach (ListItemWord listItemWord in m_ListItemWords.Where(_W => _W.IsForgotten))
+                    m_Session.AddForgottenWordInImmediateRepeat(listItemWord.English);
+
+                //stop immediate repeat only when user made no mistake in it
+                if (m_ListItemWords.All(_W => !_W.IsForgotten))
+                    m_Session.ImmediateRepeatIsInProgress = false;
+            }
+            else if (m_Session.PostRepeatIsInProgress)
+            {
+                for (int i = 0; i < m_ListItemWords.Count; i++)
+                    m_Session.PostRepeatWords[m_Session.RepeatedWordsInPostRepeat + i].IsForgotten = m_ListItemWords[i].IsForgotten;
+
+                m_Session.RepeatedWordsInPostRepeat += m_ListItemWords.Count;
+            }
+            else
+            {
+                for (int i = 0; i < m_ListItemWords.Count; i++)
+                    m_Session.Words[m_Session.RepeatedWords + i].IsForgotten = m_ListItemWords[i].IsForgotten;
+
+                m_Session.RepeatedWords += m_ListItemWords.Count;
+
+                if (m_Session.RepeatSessionType.SupportImmediateRepeat() && m_ListItemWords.Any(_W => _W.IsForgotten))
+                {
+                    //activate ImmediateRepeat for next update
+                    m_Session.ImmediateRepeatIsInProgress = true;
+                }
+            }
+
+            if (m_Session.IsEnded && !m_Session.PostRepeatIsInProgress && m_Session.RepeatSessionType.SupportPostRepeat())
+                m_Session.PreparePostRepeat();
+
+            m_Session.LearnSeconds += (int)(DateTime.Now - m_StartCurrentPageTime).TotalSeconds - m_SecondsInPause;
+            WordsManager.Instance.SaveDataToCache();
+            PrepareWords();
+        }
+
+        void PrepareWords()
+        {
+            if (m_Session.IsEnded)
+            {
+                Finish();
+                return;
+            }
+
+            m_NextButton.Text = GetTextForButton();
 
             m_ListItemWords.Clear();
-            for (int i = m_Session.RepeatedWords; i < Math.Min(m_Session.RepeatedWords + LIST_WORDS_COUNT, m_Session.Words.Count); i++)
+
+            if (m_Session.ImmediateRepeatIsInProgress)
             {
-                RepeatSessionWord word = m_Session.Words[i];
-                m_ListItemWords.Add(new ListItemWord() { Russian = WordsManager.Instance.GetWord(word.English).Russian, English = word.English });
+                for (int i = m_Session.RepeatedWords - LIST_WORDS_COUNT; i < m_Session.RepeatedWords; i++)
+                {
+                    RepeatSessionWord word = m_Session.Words[i];
+                    if (word.IsForgotten)
+                        m_ListItemWords.Add(new ListItemWord() { Russian = WordsManager.Instance.GetWord(word.English).Russian, English = word.English });
+                }
             }
+            else
+            {
+                List<RepeatSessionWord> words = m_Session.PostRepeatIsInProgress ? m_Session.PostRepeatWords : m_Session.Words;
+                int repeatedCount = m_Session.PostRepeatIsInProgress ? m_Session.RepeatedWordsInPostRepeat : m_Session.RepeatedWords;
+
+                for (int i = repeatedCount; i < Math.Min(repeatedCount + LIST_WORDS_COUNT, words.Count); i++)
+                {
+                    RepeatSessionWord word = words[i];
+                    m_ListItemWords.Add(new ListItemWord() { Russian = WordsManager.Instance.GetWord(word.English).Russian, English = word.English });
+                }
+            }
+            
             m_ListViewAdapter.NotifyDataSetChanged();
+            m_ListView.ScrollTo(0, 0);
 
             m_StartCurrentPageTime = DateTime.Now;
             m_SecondsInPause = 0;
             m_PauseTime = null;
         }
 
+        string GetTextForButton()
+        {
+            if (m_Session.ImmediateRepeatIsInProgress)
+                return "Immediate Repeat";
+
+            List<RepeatSessionWord> words = m_Session.PostRepeatIsInProgress ? m_Session.PostRepeatWords : m_Session.Words;
+            int repeatedCount = m_Session.PostRepeatIsInProgress ? m_Session.RepeatedWordsInPostRepeat : m_Session.RepeatedWords;
+
+            int forggotten = words.Take(m_Session.RepeatedWords).Count(_W => _W.IsForgotten);
+            int forgottenPercent = repeatedCount > 0 ? forggotten * 100 / repeatedCount : 0;
+            
+            return string.Format(
+                    "{0}{1}/{2} : F - ({3},{4}%) : T - {5}:{6}",
+                    m_Session.PostRepeatIsInProgress ? "PR " : string.Empty,
+                    repeatedCount,
+                    words.Count,
+                    forggotten,
+                    forgottenPercent,
+                    m_Session.LearnSeconds / 60,
+                    m_Session.LearnSeconds % 60
+                );
+        }
+
         void OnListItemClick(object sender, AdapterView.ItemClickEventArgs e)
         {
             var t = m_ListItemWords[e.Position];
 
-            if (t.ShowRussian)
+            if (t.ShowTranslate)
                 t.IsForgotten = !t.IsForgotten;
             else
-                t.ShowRussian = true;
+                t.ShowTranslate = true;
 
             m_ListViewAdapter.NotifyDataSetChanged();
         }
-
-       
     }
 }

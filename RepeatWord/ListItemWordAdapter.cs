@@ -1,14 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-
 using Android.App;
 using Android.Content;
-using Android.OS;
-using Android.Runtime;
 using Android.Speech.Tts;
 using Android.Views;
 using Android.Widget;
@@ -20,7 +13,7 @@ namespace RepeatWord
         public string English;
         public string Russian;
         public bool IsForgotten;
-        public bool ShowRussian;
+        public bool ShowTranslate;
     }
 
     public class ListItemWordAdapter : BaseAdapter<ListItemWord>, TextToSpeech.IOnInitListener
@@ -28,13 +21,18 @@ namespace RepeatWord
         List<ListItemWord> items;
         Activity context;
         TextToSpeech textToSpeech;
+        bool m_ReverseTranslation;
 
-        public ListItemWordAdapter(Activity context, List<ListItemWord> items)
+        //i know this is just garbage hack. But i have no time find other way
+        Dictionary<View, string> m_ButtonBindings = new Dictionary<View, string>();
+
+        public ListItemWordAdapter(Activity _Context, List<ListItemWord> _Items, bool _ReverseTranslation)
             : base()
         {
-            this.context = context;
-            this.items = items;
-            textToSpeech = new TextToSpeech(context, this, "com.google.android.tts");
+            this.context = _Context;
+            this.items = _Items;
+            m_ReverseTranslation = _ReverseTranslation;
+            textToSpeech = new TextToSpeech(_Context, this, "com.google.android.tts");
         }
 
         public override long GetItemId(int position)
@@ -56,16 +54,38 @@ namespace RepeatWord
         {
             var item = items[position];
             View view = convertView;
-            if (view == null) // no view to re-use, create new
+
+            bool createView = view == null;
+            if (createView)
                 view = context.LayoutInflater.Inflate(Resource.Layout.list_item_word, null);
-            view.FindViewById<TextView>(Resource.Id.EnglishWord).Text = item.English;
-            view.FindViewById<TextView>(Resource.Id.RussianWord).Text = item.ShowRussian ? item.Russian : String.Empty;
+            
+            view.FindViewById<TextView>(Resource.Id.EnglishWord).Text = m_ReverseTranslation ? item.Russian : item.English;
+            view.FindViewById<TextView>(Resource.Id.RussianWord).Text = item.ShowTranslate 
+                ? m_ReverseTranslation ? item.English : item.Russian
+                : String.Empty;
             view.SetBackgroundColor(item.IsForgotten ? Android.Graphics.Color.LightPink : Android.Graphics.Color.White);
 
-            view.FindViewById<Button>(Resource.Id.SpeakButton).Click += (sender, e) =>
+            Button btnSpeak = view.FindViewById<Button>(Resource.Id.SpeakButton);
+            Button btnWeb = view.FindViewById<Button>(Resource.Id.WebButton);
+
+            m_ButtonBindings[view] = item.English;
+
+            if (createView)
             {
-                textToSpeech.Speak(item.English, QueueMode.Flush, null);
-            };
+                btnSpeak.Click += (sender, e) =>
+                {
+                    string bind = m_ButtonBindings[view];
+                    textToSpeech.Speak(bind, QueueMode.Flush, null);
+                };
+                btnWeb.Click += (sender, e) =>
+                {
+                    string bind = m_ButtonBindings[view];
+                    var uri = Android.Net.Uri.Parse("https://context.reverso.net/перевод/английский-русский/" + bind);
+                    var intent = new Intent(Intent.ActionView, uri);
+                    context.StartActivity(intent);
+                };
+            }
+
             return view;
         }
 
