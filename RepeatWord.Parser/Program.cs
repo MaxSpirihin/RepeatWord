@@ -23,7 +23,7 @@ namespace RepeatWord.Parser
             {
                 byte[] data = File.ReadAllBytes(fileName);
                 string er;
-                List<Word> words = ExcelParser.Parse(data, out er);
+                List<Word> words = WordsParser.ParseFromExcel(data, out er);
                
                 if (words.Count > 0)
                 {

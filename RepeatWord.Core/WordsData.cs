@@ -13,6 +13,7 @@ namespace RepeatWord
         public int NewWordRow;
         public int DailyRepeatCount;
         public int ActiveLearnCount;
+        public string GoogleSheetID;
 
         public WordsData()
         {

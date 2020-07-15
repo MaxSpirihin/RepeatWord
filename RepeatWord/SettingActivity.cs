@@ -21,6 +21,7 @@ namespace RepeatWord
         EditText m_TextDailyRepeatCount;
         EditText m_NewWordList;
         EditText m_NewWordRow;
+        EditText m_GoogleSheetID;
         Button m_NextButton;
         TextView m_CurrentWords;
 
@@ -33,6 +34,7 @@ namespace RepeatWord
             m_TextDailyRepeatCount = FindViewById<EditText>(Resource.Id.etDailyWordsCount);
             m_NewWordList = FindViewById<EditText>(Resource.Id.etListNum);
             m_NewWordRow = FindViewById<EditText>(Resource.Id.etRowNum);
+            m_GoogleSheetID = FindViewById<EditText>(Resource.Id.etGoogleSheetID);
             m_CurrentWords = FindViewById<TextView>(Resource.Id.tvCurrentWords);
 
             m_NextButton = FindViewById<Button>(Resource.Id.btnMoveToNextWords);
@@ -57,11 +59,13 @@ namespace RepeatWord
             m_TextDailyRepeatCount.Text = WordsManager.Instance.Data.DailyRepeatCount.ToString();
             m_NewWordList.Text = WordsManager.Instance.Data.NewWordList.ToString();
             m_NewWordRow.Text = WordsManager.Instance.Data.NewWordRow.ToString();
+            m_GoogleSheetID.Text = WordsManager.Instance.Data.GoogleSheetID;
 
             m_TextActiveLearnCount.TextChanged += TextChanged;
             m_TextDailyRepeatCount.TextChanged += TextChanged;
             m_NewWordList.TextChanged += TextChanged;
             m_NewWordRow.TextChanged += TextChanged;
+            m_GoogleSheetID.TextChanged += TextChanged;
 
             TextChanged(null, null);
 
@@ -79,6 +83,7 @@ namespace RepeatWord
             WordsManager.Instance.Data.DailyRepeatCount = GetIntValue(m_TextDailyRepeatCount, 0);
             WordsManager.Instance.Data.NewWordList = GetIntValue(m_NewWordList, 0);
             WordsManager.Instance.Data.NewWordRow = GetIntValue(m_NewWordRow, 0);
+            WordsManager.Instance.Data.GoogleSheetID = m_GoogleSheetID.Text;
 
             if (WordsManager.Instance.Data.DailyRepeatCount != dailyRepeatCountOld || 
                 WordsManager.Instance.Data.NewWordList != newWordListOld ||
@@ -106,38 +111,9 @@ namespace RepeatWord
         void PrepareButtons()
         {
             Button button = FindViewById<Button>(Resource.Id.btnPickFile);
-            button.Click += async (sender, e) =>
+            button.Click += (sender, e) =>
             {
-                try
-                {
-                    FileData fileData = await CrossFilePicker.Current.PickFile();
-                    if (fileData == null)
-                    {
-                        Toast.MakeText(Application.Context, "Cant get file", ToastLength.Long).Show();
-                        return;
-                    }
-
-                    string fileName = fileData.FileName;
-
-                    Console.WriteLine("File name chosen: " + fileName);
-                    string er;
-                    List<Word> words = ExcelParser.Parse(fileData.DataArray.ToArray(), out er);
-
-                    if (words.Count > 0)
-                    {
-                        WordsManager.Instance.SetWords(words);
-                        Toast.MakeText(Application.Context, "Updated " + words.Count + " words", ToastLength.Long).Show();
-                    }
-                    else
-                    {
-                        Toast.MakeText(Application.Context, "Parse ex " + er, ToastLength.Long).Show();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Exception choosing file: " + ex.ToString());
-                    Toast.MakeText(Application.Context, "Load ex " + ex.Message, ToastLength.Long).Show();
-                }
+                StartActivity(new Intent(this, typeof(UpdateWordsActivity)));
             };
 
             button = FindViewById<Button>(Resource.Id.btnResetCurrentFullSession);
