@@ -1,17 +1,11 @@
 ﻿using Android.App;
 using Android.OS;
-using Android.Support.V7.App;
-using Android.Runtime;
 using Android.Widget;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using Android.Content;
 using System.IO;
 using Android;
 using Android.Content.PM;
-using static Android.App.ActionBar;
+using System.Linq;
 
 namespace RepeatWord
 {
@@ -22,8 +16,8 @@ namespace RepeatWord
         {
             base.OnCreate(savedInstanceState);
             SetContentView(Resource.Layout.activity_main);
-            AskPermissions();
-            WordsManager.Instance.Init(Path.Combine(Android.OS.Environment.ExternalStorageDirectory.AbsolutePath, "RepeatWord"));
+            if (AskPermissions())
+                InitWordsManager();
 
             Button button = FindViewById<Button>(Resource.Id.btnLearnActiveWords);
             button.Click += (sender, e) =>
@@ -85,18 +79,35 @@ namespace RepeatWord
                 var intent = new Intent(this, typeof(SettingActivity));
                 StartActivity(intent);
             };
-
-
-
+        }
+        
+        void InitWordsManager()
+        {
+            WordsManager.Instance.Init(Environment.ExternalStorageDirectory.AbsolutePath);
         }
 
-        void AskPermissions()
+        bool AskPermissions()
         {
             if (PackageManager.CheckPermission(Manifest.Permission.ReadExternalStorage, PackageName) != Permission.Granted
                 && PackageManager.CheckPermission(Manifest.Permission.WriteExternalStorage, PackageName) != Permission.Granted)
             {
                 var permissions = new string[] { Manifest.Permission.ReadExternalStorage, Manifest.Permission.WriteExternalStorage };
                 RequestPermissions(permissions, 1);
+                return false;
+            }
+
+            return true;
+        }
+
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
+        {
+            if (grantResults.Any(_P => _P == Permission.Denied))
+            {
+                Finish();
+            }
+            else
+            {
+                InitWordsManager();
             }
         }
     }

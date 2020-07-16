@@ -3,7 +3,6 @@ using Android.OS;
 using Android.Widget;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using static Android.App.ActionBar;

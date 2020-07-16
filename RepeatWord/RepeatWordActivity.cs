@@ -160,7 +160,7 @@ namespace RepeatWord
             }
             
             m_ListViewAdapter.NotifyDataSetChanged();
-            m_ListView.ScrollTo(0, 0);
+            m_ListView.SetSelectionAfterHeaderView();
 
             m_StartCurrentPageTime = DateTime.Now;
             m_SecondsInPause = 0;

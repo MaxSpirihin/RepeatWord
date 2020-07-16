@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace RepeatWord
 {
@@ -36,23 +35,30 @@ namespace RepeatWord
 
         #region properties
 
-        public WordsData Data { get; private set; }
-        
-        string CacheFolderName { get; set; }
+        string RootFolderPath { get; set; }
 
-        string CacheFileName
+        public WordsData Data { get; private set; }
+
+        string LegacyCacheFilePath
         {
-            get
-            {
-                return Path.Combine(CacheFolderName, "RepeatWordData.txt");
-            }
+            get { return Path.Combine(RootFolderPath, "RepeatWord", "RepeatWordData.txt"); }
+        }
+
+        string CacheFolderPath
+        {
+            get { return Path.Combine(RootFolderPath, "FastVocab"); } 
+        }
+
+        string CacheFilePath
+        {
+            get { return Path.Combine(CacheFolderPath, "FastVocabData.txt"); }
         }
 
         #endregion
 
-        public void Init(string _CacheFolder)
+        public void Init(string _FolderForCache)
         {
-            CacheFolderName = _CacheFolder;
+            RootFolderPath = _FolderForCache;
             string json = GetJsonFromCache();
 
             Data = string.IsNullOrEmpty(json) ? new WordsData() : JsonConvert.DeserializeObject<WordsData>(json);
@@ -131,10 +137,10 @@ namespace RepeatWord
                 }
             }
 
-            if (!Directory.Exists(CacheFolderName))
-                Directory.CreateDirectory(CacheFolderName);
+            if (!Directory.Exists(CacheFolderPath))
+                Directory.CreateDirectory(CacheFolderPath);
 
-            File.WriteAllText(CacheFileName, JsonConvert.SerializeObject(Data));
+            File.WriteAllText(CacheFilePath, JsonConvert.SerializeObject(Data));
         }
 
         public Word GetWord(string _English)
@@ -153,10 +159,14 @@ namespace RepeatWord
 
         string GetJsonFromCache()
         {
-            if (!Directory.Exists(CacheFolderName))
-                Directory.CreateDirectory(CacheFolderName);
+            if (!Directory.Exists(CacheFolderPath))
+                Directory.CreateDirectory(CacheFolderPath);
 
-            return File.Exists(CacheFileName) ? File.ReadAllText(CacheFileName) : string.Empty;
+            //check legacy folder
+            if (!File.Exists(CacheFilePath) && File.Exists(LegacyCacheFilePath))
+                File.Copy(LegacyCacheFilePath, CacheFilePath);
+
+            return File.Exists(CacheFilePath) ? File.ReadAllText(CacheFilePath) : string.Empty;
         }
 
         #endregion
