@@ -30,52 +30,55 @@ namespace RepeatWord
         private async void Load()
         {
             AddText("Loading has started. Please do not close the page while loading is in process.");
-
-            HttpClient client = new HttpClient();
             Exception exception = null;
-            List<Word> words = new List<Word>();
+            string processingURL = null;
             bool atLeastOneListProcessed = false;
+            List<Word> words = new List<Word>();
 
-            for (int i = 1; ; i++)
+            try
             {
-                if (IsDestroyed)
+                HttpClient client = new HttpClient();
+               
+                for (int i = 1; ; i++)
                 {
-                    Toast.MakeText(Application.Context, "Loading was interrupted and was not completed", ToastLength.Long).Show();
-                    return;
-                }
-                
-                string URL = $"https://spreadsheets.google.com/feeds/cells/{WordsManager.Instance.Data.GoogleSheetID}/{i}/public/full?alt=json";
-                var response = await client.GetAsync(string.Format(URL));
-                string result = await response.Content.ReadAsStringAsync();
-
-                bool isJson = result.StartsWith("{");
-
-                if (!isJson)
-                {
-                    if (!atLeastOneListProcessed)
+                    if (IsDestroyed)
                     {
-                        AddText("Url data has incorrect Format");
-                        AddText("URL = " + URL);
-                        AddText("Result = " + result);
+                        Toast.MakeText(Application.Context, "Loading was interrupted and was not completed", ToastLength.Long).Show();
+                        return;
                     }
-                    break;
-                }
-                
-                atLeastOneListProcessed = true;
-                List<Word> wordsFromOneList = WordsParser.ParseFromGoogleSheetJson(result, i, out exception);
 
-                if (exception != null)
-                {
-                    AddText("An error ocurred");
-                    AddText(exception.ToString());
-                    AddText("URL = " + URL);
-                    break;
-                }
+                    processingURL = $"https://spreadsheets.google.com/feeds/cells/{WordsManager.Instance.Data.GoogleSheetID}/{i}/public/full?alt=json";
+                    var response = await client.GetAsync(processingURL);
+                    string result = await response.Content.ReadAsStringAsync();
 
-                words.AddRange(wordsFromOneList);
-                
-                AddText($"List {i} loaded.");
-                AddText($"Total {words.Count} words loaded.");
+                    bool isJson = result.StartsWith("{");
+
+                    if (!isJson)
+                    {
+                        if (!atLeastOneListProcessed)
+                        {
+                            AddText("Url data has incorrect Format");
+                            AddText("URL = " + processingURL);
+                            AddText("Result = " + result);
+                        }
+                        break;
+                    }
+                    
+                    atLeastOneListProcessed = true;
+                    List<Word> wordsFromOneList = WordsParser.ParseFromGoogleSheetJson(result, i, out exception);
+
+                    if (exception != null)
+                        break;
+
+                    words.AddRange(wordsFromOneList);
+
+                    AddText($"List {i} loaded.");
+                    AddText($"Total {words.Count} words loaded.");
+                }
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
             }
 
             if (exception == null && atLeastOneListProcessed)
@@ -94,6 +97,10 @@ namespace RepeatWord
 
             if (exception != null)
             {
+                AddText("An error ocurred");
+                AddText(exception.ToString());
+                AddText("ERROR URL = " + processingURL);
+
                 Button cbButton = new Button(this);
                 cbButton.Text = "Copy log to clipboard";
                 layout.AddView(cbButton, lp);
