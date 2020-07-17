@@ -38,20 +38,15 @@ namespace RepeatWord
         string RootFolderPath { get; set; }
 
         public WordsData Data { get; private set; }
-
-        string LegacyCacheFilePath
-        {
-            get { return Path.Combine(RootFolderPath, "RepeatWord", "RepeatWordData.txt"); }
-        }
-
+        
         string CacheFolderPath
         {
-            get { return Path.Combine(RootFolderPath, "FastVocab"); } 
+            get { return Path.Combine(RootFolderPath, "FastWord"); } 
         }
 
         string CacheFilePath
         {
-            get { return Path.Combine(CacheFolderPath, "FastVocabData.txt"); }
+            get { return Path.Combine(CacheFolderPath, "FastWordData.txt"); }
         }
 
         #endregion
@@ -162,9 +157,14 @@ namespace RepeatWord
             if (!Directory.Exists(CacheFolderPath))
                 Directory.CreateDirectory(CacheFolderPath);
 
-            //check legacy folder
-            if (!File.Exists(CacheFilePath) && File.Exists(LegacyCacheFilePath))
-                File.Copy(LegacyCacheFilePath, CacheFilePath);
+            //check legacy folders
+            string legacyFolder1 = Path.Combine(RootFolderPath, "FastVocab", "FastVocabData.txt");
+            if (!File.Exists(CacheFilePath) && File.Exists(legacyFolder1))
+                File.Copy(legacyFolder1, CacheFilePath);
+
+            string legacyFolder2 = Path.Combine(RootFolderPath, "RepeatWord", "RepeatWordData.txt");
+            if (!File.Exists(CacheFilePath) && File.Exists(legacyFolder2))
+                File.Copy(legacyFolder2, CacheFilePath);
 
             return File.Exists(CacheFilePath) ? File.ReadAllText(CacheFilePath) : string.Empty;
         }
